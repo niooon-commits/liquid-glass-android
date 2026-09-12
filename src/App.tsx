@@ -25,7 +25,6 @@ import { ActionModal } from './components/ActionModal';
 import { TransactionDetailModal } from './components/TransactionDetailModal';
 import { UsersView } from './components/UsersView';
 import { SettingsView } from './components/SettingsView';
-import { LiquidGlassBrowser } from './components/liquidglass/LiquidGlassBrowser';
 
 export default function App() {
   const [theme, setTheme] = useState<ThemeMode>(() => {
@@ -39,7 +38,7 @@ export default function App() {
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
-  const [activeNav, setActiveNav] = useState('liquid-glass');
+  const [activeNav, setActiveNav] = useState('dashboard');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
@@ -232,8 +231,6 @@ export default function App() {
           id="main-dashboard-content"
           className="flex-1 w-full max-w-7xl mx-auto px-4 py-5 sm:px-6 sm:py-7 space-y-6 sm:space-y-8 pb-24 lg:pb-10"
         >
-          {activeNav === 'liquid-glass' && <LiquidGlassBrowser />}
-
           {activeNav === 'dashboard' && (
             <>
               {/* Dashboard Banner / Welcome Greeting */}

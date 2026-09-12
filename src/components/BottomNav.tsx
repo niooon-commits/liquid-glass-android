@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, LayoutDashboard, BarChart3, CreditCard, Menu } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Users, CreditCard, Menu } from 'lucide-react';
 
 interface BottomNavProps {
   activeNav: string;
@@ -13,9 +13,9 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   onOpenMobileDrawer,
 }) => {
   const items = [
-    { id: 'liquid-glass', label: 'Liquid Glass', icon: Sparkles },
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'users', label: 'Users', icon: Users },
     { id: 'transactions', label: 'Ledger', icon: CreditCard },
   ];
 

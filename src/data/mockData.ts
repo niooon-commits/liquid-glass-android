@@ -1,7 +1,6 @@
 import { KpiMetric, Transaction, ChartDataPoint, NavigationItem } from '../types';
 
 export const navItems: NavigationItem[] = [
-  { id: 'liquid-glass', label: 'Liquid Glass UI', icon: 'Sparkles', badge: 'Android' },
   { id: 'dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
   { id: 'analytics', label: 'Analytics', icon: 'BarChart3' },
   { id: 'users', label: 'Users & Teams', icon: 'Users' },

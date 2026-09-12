@@ -1,13 +1,10 @@
 package com.niooon.liquidglass.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -17,7 +14,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -25,19 +21,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.niooon.liquidglass.ui.components.DiscoverSection
 import com.niooon.liquidglass.ui.components.GoogleLogoHeader
 import com.niooon.liquidglass.ui.components.LiquidBottomBar
 import com.niooon.liquidglass.ui.components.LiquidSearchBar
 import com.niooon.liquidglass.ui.components.QuickAccessGrid
-import com.niooon.liquidglass.ui.theme.TextPrimary
 import kotlinx.coroutines.launch
 
 @Composable
-fun LiquidHomeScreen() {
+fun LiquidHomeScreen(
+    tabCount: Int = 1,
+    onSearch: (String) -> Unit = {},
+    onOpenUrl: (String) -> Unit = {},
+    onNewTab: () -> Unit = {},
+    onTabsClick: () -> Unit = {},
+    onMenuClick: () -> Unit = {}
+) {
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -59,22 +59,16 @@ fun LiquidHomeScreen() {
                 modifier = Modifier
                     .navigationBarsPadding()
                     .padding(bottom = 12.dp),
-                tabCount = 1,
-                onBackClick = {
-                    scope.launch { snackbarHostState.showSnackbar("Navigated back") }
-                },
-                onForwardClick = {
-                    scope.launch { snackbarHostState.showSnackbar("Navigated forward") }
-                },
+                tabCount = tabCount,
+                canGoBack = false,
+                canGoForward = false,
+                onBackClick = {},
+                onForwardClick = {},
                 onSearchClick = {
-                    scope.launch { snackbarHostState.showSnackbar("Opening search...") }
+                    // Trigger new search focus
                 },
-                onTabsClick = {
-                    scope.launch { snackbarHostState.showSnackbar("1 active tab") }
-                },
-                onMenuClick = {
-                    scope.launch { snackbarHostState.showSnackbar("Browser settings & history") }
-                }
+                onTabsClick = onTabsClick,
+                onMenuClick = onMenuClick
             )
         }
     ) { innerPadding ->
@@ -105,7 +99,9 @@ fun LiquidHomeScreen() {
                 // 2. Liquid Glass Pill Search Bar
                 LiquidSearchBar(
                     onSearch = { query ->
-                        scope.launch { snackbarHostState.showSnackbar("Searching for: $query") }
+                        if (query.isNotBlank()) {
+                            onSearch(query)
+                        }
                     },
                     onVoiceClick = {
                         scope.launch { snackbarHostState.showSnackbar("Listening to speech...") }
@@ -120,10 +116,10 @@ fun LiquidHomeScreen() {
                 // 3. Quick Access Grid (YouTube, Instagram, Facebook, WhatsApp, etc.)
                 QuickAccessGrid(
                     onItemClick = { item ->
-                        scope.launch {
-                            snackbarHostState.showSnackbar(
-                                if (item.id == "add") "Add shortcut dialog" else "Opening ${item.title}"
-                            )
+                        if (item.id == "add") {
+                            scope.launch { snackbarHostState.showSnackbar("Add shortcut dialog") }
+                        } else if (item.url.isNotBlank()) {
+                            onOpenUrl(item.url)
                         }
                     }
                 )
@@ -136,7 +132,9 @@ fun LiquidHomeScreen() {
                         scope.launch { snackbarHostState.showSnackbar("Loading more discovery stories...") }
                     },
                     onArticleClick = { article ->
-                        scope.launch { snackbarHostState.showSnackbar("Opening article: ${article.title}") }
+                        if (article.articleUrl.isNotBlank()) {
+                            onOpenUrl(article.articleUrl)
+                        }
                     }
                 )
 

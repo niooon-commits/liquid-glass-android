@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, X, ArrowRight, Sparkles, LayoutDashboard, BarChart3, Users, CreditCard, Shield, FileText } from 'lucide-react';
+import { Search, X, ArrowRight, LayoutDashboard, BarChart3, Users, CreditCard, Shield, FileText } from 'lucide-react';
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -32,7 +32,6 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   if (!isOpen) return null;
 
   const quickLinks = [
-    { id: 'liquid-glass', title: 'Liquid Glass Interface (Android)', desc: 'Material 3 Compose liquid glass browser portal', icon: Sparkles },
     { id: 'dashboard', title: 'Main Executive Dashboard', desc: 'KPI cards, live sync graphs', icon: LayoutDashboard },
     { id: 'analytics', title: 'Revenue & Margins Analytics', desc: 'Interval forecasting & breakdown', icon: BarChart3 },
     { id: 'users', title: 'Team Directory & Roles', desc: 'Access controls and member seats', icon: Users },
