@@ -122,7 +122,9 @@ fun QuickAccessButton(
                             IconType.GOOGLE -> Brush.linearGradient(listOf(Color.White, Color.White))
                             IconType.TWITTER_X -> Brush.linearGradient(listOf(Color.Black, Color(0xFF111111)))
                             IconType.PINTEREST -> Brush.linearGradient(listOf(Color(0xFFE60023), Color(0xFFAD081B)))
+                            IconType.CHROMIUM -> Brush.linearGradient(listOf(Color(0xFF0284C7), Color(0xFF2563EB)))
                             IconType.ADD -> Brush.linearGradient(listOf(Color.White.copy(alpha = 0.5f), Color.White.copy(alpha = 0.2f)))
+                            else -> Brush.linearGradient(listOf(Color.White, Color.White))
                         }
                     ),
                 contentAlignment = Alignment.Center
@@ -198,6 +200,15 @@ fun QuickAccessButton(
                             modifier = Modifier.size(22.dp)
                         )
                     }
+                    IconType.ADD -> {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Add",
+                            tint = Color.White,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                    else -> {}
                 }
             }
         }
