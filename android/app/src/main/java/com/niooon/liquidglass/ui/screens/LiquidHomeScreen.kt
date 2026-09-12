@@ -14,11 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BatteryFull
-import androidx.compose.material.icons.filled.NetworkCell
-import androidx.compose.material.icons.filled.Wifi
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -96,10 +91,7 @@ fun LiquidHomeScreen() {
                     .padding(innerPadding),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Top Status Bar Indicator (9:41, WiFi, Signal, Battery 100)
-                StatusBarIndicator()
-
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 // 1. Google Multi-Color Logo & Profile Icon
                 GoogleLogoHeader(
@@ -149,54 +141,6 @@ fun LiquidHomeScreen() {
                 )
 
                 Spacer(modifier = Modifier.height(80.dp))
-            }
-        }
-    }
-}
-
-@Composable
-fun StatusBarIndicator() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = "9:41",
-            fontWeight = FontWeight.Bold,
-            fontSize = 15.sp,
-            color = TextPrimary
-        )
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.NetworkCell,
-                contentDescription = "Signal",
-                tint = TextPrimary,
-                modifier = Modifier.padding(end = 2.dp)
-            )
-            Icon(
-                imageVector = Icons.Default.Wifi,
-                contentDescription = "Wifi",
-                tint = TextPrimary
-            )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "100",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 12.sp,
-                    color = TextPrimary
-                )
-                Icon(
-                    imageVector = Icons.Default.BatteryFull,
-                    contentDescription = "Battery",
-                    tint = TextPrimary
-                )
             }
         }
     }

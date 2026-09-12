@@ -26,8 +26,16 @@ When performing GitHub, Vercel, or Supabase operations:
 
 ## Strict Code Review & Intelligence Graph Policy (code-review-graph)
 - **Engine**: `code-review-graph` (v2.3.8+), path `/usr/local/bin/code-review-graph`
-- **Skill Reference**: `/skills/code-review-graph/SKILL.md`
-- **MANDATORY POLICY**:
+- **Skill Reference**: `/skills/code-review-graph/SKILL.md` & `/skills/crg-review-reporter/SKILL.md`
+- **MANDATORY EXECUTION & REPORTING POLICY**:
   1. **Before Modifying Shared Code**: Always evaluate blast-radius and callers (`code-review-graph impact <target>` or `code-review-graph architecture`) to avoid breaking dependent modules.
-  2. **After Modifying Code**: Always execute `code-review-graph update` to keep the local graph, callers, and edges strictly in sync with the codebase.
+  2. **After Modifying Code**: Always execute `code-review-graph update` (or `code-review-graph build`) to keep the local graph, callers, and edges strictly in sync with the codebase.
   3. **Verification & Cleanliness**: Use `code-review-graph detect-changes` and `code-review-graph dead-code` to ensure no orphan components or broken imports are introduced.
+  4. **Build Confirmation**: Verify that the application builds successfully using `compile_applet` (or verify Android build if Android code was touched).
+  5. **MANDATORY USER REPORTING**: On EVERY turn where code is written or edited, the agent MUST append a structured "Code Review Graph পর্যবেক্ষণ ও বিল্ড রেজাল্ট" summary detailing:
+     - 🏗️ Build Status (বিল্ড স্ট্যাটাস)
+     - 🌐 Graph Stats (নোড, এজ ও ফাইলের সংখ্যা)
+     - 🎯 Blast-Radius & Impact (প্রভাবিত কম্পোনেন্ট/ফাংশন)
+     - 🔍 Dead-Code & Integrity (ডেড-কোড ও ব্রোকেন রেফারেন্স চেক)
+     - 🛡️ Architecture Health (আর্কিটেকচার হেলথ)
+

@@ -16,9 +16,6 @@ import {
   Copy,
   X,
   Sparkles,
-  Wifi,
-  Signal,
-  Battery,
   User as UserIcon,
   Github,
   Download,
@@ -211,7 +208,6 @@ fun LiquidHomeScreen() {
                 .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            StatusBarIndicator()
             GoogleLogoHeader()
             LiquidSearchBar()
             QuickAccessGrid()
@@ -471,20 +467,7 @@ keyPassword=nutritrack123
           <div className="absolute bottom-20 -left-10 w-40 h-40 rounded-full bg-blue-300/30 blur-xl pointer-events-none" />
 
           {/* Inner Content Scroller */}
-          <div className="relative z-10 flex flex-col min-h-[820px] px-4 pt-3 pb-24 text-slate-900">
-            {/* Top Device Status Bar (9:41, Cellular, WiFi, 100%) */}
-            <div className="w-full flex items-center justify-between px-3 py-1 text-slate-900 font-bold text-xs">
-              <span className="tracking-tight text-sm font-black">9:41</span>
-              <div className="flex items-center gap-1.5 text-slate-900">
-                <Signal className="w-3.5 h-3.5 fill-current" />
-                <Wifi className="w-3.5 h-3.5" />
-                <div className="flex items-center gap-0.5">
-                  <span className="text-[11px] font-black">100</span>
-                  <Battery className="w-4 h-4 fill-current" />
-                </div>
-              </div>
-            </div>
-
+          <div className="relative z-10 flex flex-col min-h-[820px] px-4 pt-5 pb-24 text-slate-900">
             {/* Top Navigation & Profile Row */}
             <div className="w-full flex items-center justify-between mt-3 px-1">
               <div className="w-9" /> {/* Spacer for balance */}
