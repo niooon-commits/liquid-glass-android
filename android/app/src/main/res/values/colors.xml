@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="glass_tint_sky">#A0D4FF</color>
+    <color name="glass_tint_light">#E0F2FE</color>
+    <color name="glass_border">#80FFFFFF</color>
+    <color name="google_blue">#4285F4</color>
+    <color name="google_red">#EA4335</color>
+    <color name="google_yellow">#FBBC05</color>
+    <color name="google_green">#34A853</color>
+    <color name="text_primary">#0F172A</color>
+    <color name="text_secondary">#475569</color>
+    <color name="status_bar_scrim">#00000000</color>
+</resources>

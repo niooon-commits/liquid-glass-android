@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="0.5"
+        android:scaleY="0.5"
+        android:translateX="27"
+        android:translateY="27">
+        <!-- Sleek Refractive Glass Lens / Orb -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M54,14 C31.9,14 14,31.9 14,54 C14,76.1 31.9,94 54,94 C76.1,94 94,76.1 94,54 C94,31.9 76.1,14 54,14 Z M54,84 C37.4,84 24,70.6 24,54 C24,37.4 37.4,24 54,24 C70.6,24 84,37.4 84,54 C84,70.6 70.6,84 54,84 Z" />
+        <!-- Liquid Droplet / Wave -->
+        <path
+            android:fillColor="#E0F2FE"
+            android:pathData="M54,34 C44,48 38,58 38,64 C38,72.8 45.2,80 54,80 C62.8,80 70,72.8 70,64 C70,58 64,48 54,34 Z" />
+    </group>
+</vector>

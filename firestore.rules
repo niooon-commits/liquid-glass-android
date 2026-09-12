@@ -1,0 +1,98 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net (Default deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Security Helper Functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'niooon@cinelink.fun' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidTransaction(data) {
+      return data.invoiceId is string && data.invoiceId.size() <= 64
+        && data.customerName is string && data.customerName.size() <= 128
+        && data.amount is number && data.amount >= 0
+        && (data.status == 'Completed' || data.status == 'Pending' || data.status == 'Failed');
+    }
+
+    function isValidUser(data) {
+      return data.name is string && data.name.size() <= 128
+        && data.email is string && data.email.size() <= 128
+        && data.role is string && data.role.size() <= 64;
+    }
+
+    function isValidKpi(data) {
+      return data.title is string && data.title.size() <= 64
+        && data.value is string && data.value.size() <= 64;
+    }
+
+    function isValidNotification(data) {
+      return data.title is string && data.title.size() <= 128
+        && data.desc is string && data.desc.size() <= 512;
+    }
+
+    // Health / Test Connection endpoint
+    match /test/{testId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // Financial Transactions Ledger
+    match /transactions/{transactionId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isValidId(transactionId) && isValidTransaction(incoming());
+      allow update: if isSignedIn() && isValidId(transactionId) && isValidTransaction(incoming());
+      allow delete: if isSignedIn() && isValidId(transactionId);
+    }
+
+    // Team Directory & User Profiles
+    match /users/{userId} {
+      allow read: if true;
+      allow create, update: if isSignedIn() && isValidId(userId) && isValidUser(incoming());
+      allow delete: if isSignedIn() && isValidId(userId);
+    }
+
+    // Executive Metrics & Analytics
+    match /kpi_metrics/{metricId} {
+      allow read: if true;
+      allow create, update: if isSignedIn() && isValidId(metricId) && isValidKpi(incoming());
+      allow delete: if isSignedIn() && isValidId(metricId);
+    }
+
+    // Notifications & Alert Feed
+    match /notifications/{notificationId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isValidId(notificationId) && isValidNotification(incoming());
+      allow update: if isSignedIn() && isValidId(notificationId);
+      allow delete: if isSignedIn() && isValidId(notificationId);
+    }
+
+    // Admin authorization records
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+  }
+}

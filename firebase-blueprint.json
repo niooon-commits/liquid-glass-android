@@ -1,0 +1,219 @@
+{
+  "entities": {
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Financial ledger transaction and invoice record",
+      "type": "object",
+      "properties": {
+        "invoiceId": {
+          "type": "string",
+          "description": "Unique invoice reference code",
+          "maxLength": 64
+        },
+        "customerName": {
+          "type": "string",
+          "description": "Name of the customer or corporate client",
+          "maxLength": 128
+        },
+        "customerEmail": {
+          "type": "string",
+          "description": "Contact email of customer",
+          "maxLength": 128
+        },
+        "avatarUrl": {
+          "type": "string",
+          "description": "Avatar image url for customer or company logo",
+          "maxLength": 512
+        },
+        "amount": {
+          "type": "number",
+          "description": "Transaction total amount in USD"
+        },
+        "status": {
+          "type": "string",
+          "description": "Settlement state of transaction",
+          "enum": ["Completed", "Pending", "Failed"]
+        },
+        "date": {
+          "type": "string",
+          "description": "Human readable date string",
+          "maxLength": 64
+        },
+        "method": {
+          "type": "string",
+          "description": "Settlement channel or payment processor",
+          "maxLength": 64
+        },
+        "category": {
+          "type": "string",
+          "description": "Billing tier or product line",
+          "maxLength": 64
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp",
+          "maxLength": 64
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "User ID of administrator who logged the transaction",
+          "maxLength": 128
+        }
+      },
+      "required": ["invoiceId", "customerName", "amount", "status"]
+    },
+    "User": {
+      "title": "User",
+      "description": "Authorized platform operator or team member",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Full name of the team member",
+          "maxLength": 128
+        },
+        "email": {
+          "type": "string",
+          "description": "Official company email address",
+          "maxLength": 128
+        },
+        "role": {
+          "type": "string",
+          "description": "Designated access role",
+          "maxLength": 64
+        },
+        "department": {
+          "type": "string",
+          "description": "Department or business unit",
+          "maxLength": 64
+        },
+        "status": {
+          "type": "string",
+          "description": "Account activation status",
+          "enum": ["Active", "Invited", "Suspended"]
+        },
+        "avatar": {
+          "type": "string",
+          "description": "Avatar image URL",
+          "maxLength": 512
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Account registration timestamp",
+          "maxLength": 64
+        }
+      },
+      "required": ["name", "email", "role", "status"]
+    },
+    "KpiMetric": {
+      "title": "KpiMetric",
+      "description": "Executive dashboard high-level metric aggregate",
+      "type": "object",
+      "properties": {
+        "metricId": {
+          "type": "string",
+          "description": "Identifier of the KPI metric",
+          "maxLength": 64
+        },
+        "title": {
+          "type": "string",
+          "description": "Display title of the metric",
+          "maxLength": 64
+        },
+        "value": {
+          "type": "string",
+          "description": "Formatted aggregate value",
+          "maxLength": 64
+        },
+        "change": {
+          "type": "string",
+          "description": "Percentage or quantitative delta",
+          "maxLength": 32
+        },
+        "isPositive": {
+          "type": "boolean",
+          "description": "Whether trend indicates growth or positive performance"
+        },
+        "timeframe": {
+          "type": "string",
+          "description": "Comparison timeframe",
+          "maxLength": 64
+        },
+        "icon": {
+          "type": "string",
+          "description": "Lucide icon name identifier",
+          "maxLength": 64
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Last calculation timestamp",
+          "maxLength": 64
+        }
+      },
+      "required": ["metricId", "title", "value"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "System alert or audit notification item",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Headline of notification",
+          "maxLength": 128
+        },
+        "desc": {
+          "type": "string",
+          "description": "Notification details",
+          "maxLength": 512
+        },
+        "time": {
+          "type": "string",
+          "description": "Formatted time representation",
+          "maxLength": 64
+        },
+        "unread": {
+          "type": "boolean",
+          "description": "Read status"
+        },
+        "type": {
+          "type": "string",
+          "description": "Category of notification",
+          "enum": ["alert", "user", "report", "billing"]
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp created",
+          "maxLength": 64
+        }
+      },
+      "required": ["title", "desc", "unread"]
+    }
+  },
+  "firestore": {
+    "/transactions/{transactionId}": {
+      "schema": {
+        "$ref": "#/entities/Transaction"
+      },
+      "description": "Enterprise billing invoices and transaction records"
+    },
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/User"
+      },
+      "description": "Team operators and directory profiles"
+    },
+    "/kpi_metrics/{metricId}": {
+      "schema": {
+        "$ref": "#/entities/KpiMetric"
+      },
+      "description": "Executive dashboard metric aggregates"
+    },
+    "/notifications/{notificationId}": {
+      "schema": {
+        "$ref": "#/entities/Notification"
+      },
+      "description": "System alert logs and operational notifications"
+    }
+  }
+}
