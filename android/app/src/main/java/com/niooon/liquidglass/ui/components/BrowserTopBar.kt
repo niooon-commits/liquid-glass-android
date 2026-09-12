@@ -25,8 +25,10 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DesktopWindows
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
@@ -73,6 +75,8 @@ fun BrowserTopBar(
     onShareUrlClick: () -> Unit,
     onToggleDesktopMode: () -> Unit,
     onCloseTabClick: () -> Unit,
+    onOpenInCustomTab: () -> Unit = {},
+    onChromiumInfoClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var isMenuExpanded by remember { mutableStateOf(false) }
@@ -351,6 +355,28 @@ fun BrowserTopBar(
                         onClick = {
                             isMenuExpanded = false
                             onToggleDesktopMode()
+                        }
+                    )
+
+                    DropdownMenuItem(
+                        text = { Text("Open in Chromium Tab", fontSize = 14.sp) },
+                        leadingIcon = {
+                            Icon(Icons.Default.OpenInBrowser, contentDescription = null, modifier = Modifier.size(18.dp))
+                        },
+                        onClick = {
+                            isMenuExpanded = false
+                            onOpenInCustomTab()
+                        }
+                    )
+
+                    DropdownMenuItem(
+                        text = { Text("Chromium Engine Info", fontSize = 14.sp) },
+                        leadingIcon = {
+                            Icon(Icons.Default.Info, contentDescription = null, modifier = Modifier.size(18.dp))
+                        },
+                        onClick = {
+                            isMenuExpanded = false
+                            onChromiumInfoClick()
                         }
                     )
 

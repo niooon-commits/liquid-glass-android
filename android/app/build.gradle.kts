@@ -94,6 +94,10 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation("io.coil-kt:coil-compose:2.6.0")
 
+    // Chromium Projects Integration (Chromium Engine & Custom Tabs for Android)
+    implementation("androidx.webkit:webkit:1.12.1")
+    implementation("androidx.browser:browser:1.8.0")
+
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

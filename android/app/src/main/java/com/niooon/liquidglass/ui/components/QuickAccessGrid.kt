@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -48,15 +49,16 @@ data class QuickAccessItemData(
 )
 
 enum class IconType {
-    YOUTUBE, INSTAGRAM, FACEBOOK, WHATSAPP, GOOGLE, TWITTER_X, PINTEREST, ADD
+    YOUTUBE, INSTAGRAM, FACEBOOK, WHATSAPP, GOOGLE, TWITTER_X, PINTEREST, CHROMIUM, ADD
 }
 
 val DefaultQuickAccessItems = listOf(
+    QuickAccessItemData("gg", "Google", "https://google.com", GoogleBlue, IconType.GOOGLE),
+    QuickAccessItemData("chromium", "Chromium", "https://www.chromium.org/chromium-projects/", Color(0xFF0284C7), IconType.CHROMIUM),
     QuickAccessItemData("yt", "YouTube", "https://youtube.com", YouTubeRed, IconType.YOUTUBE),
     QuickAccessItemData("ig", "Instagram", "https://instagram.com", Color(0xFFE1306C), IconType.INSTAGRAM),
     QuickAccessItemData("fb", "Facebook", "https://facebook.com", FacebookBlue, IconType.FACEBOOK),
     QuickAccessItemData("wa", "WhatsApp", "https://web.whatsapp.com", WhatsAppGreen, IconType.WHATSAPP),
-    QuickAccessItemData("gg", "Google", "https://google.com", GoogleBlue, IconType.GOOGLE),
     QuickAccessItemData("x", "X (Twitter)", "https://x.com", Color.Black, IconType.TWITTER_X),
     QuickAccessItemData("pin", "Pinterest", "https://pinterest.com", PinterestRed, IconType.PINTEREST),
     QuickAccessItemData("add", "Add", "", Color(0xFF0284C7), IconType.ADD)
@@ -186,6 +188,14 @@ fun QuickAccessButton(
                             color = Color.White,
                             fontWeight = FontWeight.Black,
                             fontSize = 20.sp
+                        )
+                    }
+                    IconType.CHROMIUM -> {
+                        Icon(
+                            imageVector = Icons.Default.Language,
+                            contentDescription = "Chromium",
+                            tint = Color.White,
+                            modifier = Modifier.size(22.dp)
                         )
                     }
                 }

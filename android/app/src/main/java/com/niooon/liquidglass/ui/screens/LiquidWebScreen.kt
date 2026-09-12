@@ -62,8 +62,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.niooon.liquidglass.chromium.ChromiumEngineManager
 import com.niooon.liquidglass.model.BrowserTab
 import com.niooon.liquidglass.ui.components.BrowserTopBar
+import com.niooon.liquidglass.ui.components.ChromiumInfoDialog
 import com.niooon.liquidglass.utils.UrlUtils
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -90,6 +92,25 @@ fun LiquidWebScreen(
     var isLoading by remember { mutableStateOf(true) }
     var progressFloat by remember { mutableFloatStateOf(0f) }
     var isDesktopMode by remember { mutableStateOf(false) }
+    var showChromiumInfo by remember { mutableStateOf(false) }
+
+    // Initialize Chromium Safe Browsing and cookies
+    LaunchedEffect(Unit) {
+        ChromiumEngineManager.initializeChromium(context)
+    }
+
+    // Chromium Engine Diagnostics Dialog
+    if (showChromiumInfo) {
+        ChromiumInfoDialog(
+            onDismiss = { showChromiumInfo = false },
+            onVisitChromiumOrg = {
+                val target = "https://www.chromium.org/chromium-projects/"
+                currentUrl = target
+                currentDomain = UrlUtils.extractDomain(target)
+                webViewInstance?.loadUrl(target)
+            }
+        )
+    }
 
     // Intercept hardware / gesture back navigation
     BackHandler(enabled = true) {
@@ -154,20 +175,22 @@ fun LiquidWebScreen(
                 onToggleDesktopMode = {
                     isDesktopMode = !isDesktopMode
                     webViewInstance?.let { wv ->
-                        val defaultAgent = WebSettings.getDefaultUserAgent(context)
-                        val desktopAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-                        wv.settings.userAgentString = if (isDesktopMode) desktopAgent else defaultAgent
-                        wv.settings.useWideViewPort = isDesktopMode
-                        wv.settings.loadWithOverviewMode = isDesktopMode
+                        ChromiumEngineManager.applyChromiumSettings(wv, isDesktopMode)
                         wv.reload()
                     }
                     Toast.makeText(
                         context,
-                        if (isDesktopMode) "Switched to Desktop Site" else "Switched to Mobile Site",
+                        if (isDesktopMode) "Switched to Desktop Site (Chromium)" else "Switched to Mobile Site (Chromium)",
                         Toast.LENGTH_SHORT
                     ).show()
                 },
-                onCloseTabClick = onCloseTabClick
+                onCloseTabClick = onCloseTabClick,
+                onOpenInCustomTab = {
+                    ChromiumEngineManager.openInChromiumCustomTab(context, currentUrl)
+                },
+                onChromiumInfoClick = {
+                    showChromiumInfo = true
+                }
             )
         }
 
@@ -202,18 +225,8 @@ fun LiquidWebScreen(
                             ViewGroup.LayoutParams.MATCH_PARENT
                         )
 
-                        settings.apply {
-                            javaScriptEnabled = true
-                            domStorageEnabled = true
-                            databaseEnabled = true
-                            loadWithOverviewMode = true
-                            useWideViewPort = true
-                            setSupportZoom(true)
-                            builtInZoomControls = true
-                            displayZoomControls = false
-                            mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-                            cacheMode = WebSettings.LOAD_DEFAULT
-                        }
+                        // Apply Chromium Project Architecture & WebSettings
+                        ChromiumEngineManager.applyChromiumSettings(this, isDesktopMode)
 
                         webViewClient = object : WebViewClient() {
                             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
