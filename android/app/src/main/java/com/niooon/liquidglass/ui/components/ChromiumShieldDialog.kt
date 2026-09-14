@@ -52,6 +52,8 @@ fun ChromiumShieldDialog(
 ) {
     var isShieldActive by remember { mutableStateOf(ChromiumAdBlocker.isEnabled) }
     var isTrackerActive by remember { mutableStateOf(ChromiumAdBlocker.isTrackerBlockingEnabled) }
+    var isDefuserActive by remember { mutableStateOf(ChromiumAdBlocker.isAntiAdblockDefuserEnabled) }
+    var isCosmeticActive by remember { mutableStateOf(ChromiumAdBlocker.isCosmeticHidingEnabled) }
     val tabBlocked = ChromiumAdBlocker.getBlockedCount(tabId)
     val totalBlocked = ChromiumAdBlocker.totalBlockedGlobal.get()
 
@@ -226,6 +228,86 @@ fun ChromiumShieldDialog(
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = Color.White,
                             checkedTrackColor = Color(0xFF059669)
+                        )
+                    )
+                }
+
+                // Toggle 3: Anti-Adblock Defuser (Anti-Breakage)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFF8FAFC))
+                        .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(12.dp))
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Speed,
+                            contentDescription = null,
+                            tint = Color(0xFF8B5CF6),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Column {
+                            Text("Smart Anti-Breakage Defuser", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                            Text("Feeds dummy responses so sites never freeze", fontSize = 10.sp, color = Color(0xFF64748B))
+                        }
+                    }
+
+                    Switch(
+                        checked = isDefuserActive,
+                        onCheckedChange = { checked ->
+                            isDefuserActive = checked
+                            ChromiumAdBlocker.isAntiAdblockDefuserEnabled = checked
+                        },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = Color(0xFF8B5CF6)
+                        )
+                    )
+                }
+
+                // Toggle 4: Cosmetic Hiding & Anti-Modal
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFF8FAFC))
+                        .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(12.dp))
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Block,
+                            contentDescription = null,
+                            tint = Color(0xFFF59E0B),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Column {
+                            Text("Cosmetic Element Hider", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                            Text("Collapses blank spaces & stops scroll locks", fontSize = 10.sp, color = Color(0xFF64748B))
+                        }
+                    }
+
+                    Switch(
+                        checked = isCosmeticActive,
+                        onCheckedChange = { checked ->
+                            isCosmeticActive = checked
+                            ChromiumAdBlocker.isCosmeticHidingEnabled = checked
+                        },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = Color(0xFFF59E0B)
                         )
                     )
                 }

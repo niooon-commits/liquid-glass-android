@@ -267,6 +267,10 @@ fun LiquidWebScreen(
                                     currentUrl = it
                                     currentDomain = UrlUtils.extractDomain(it)
                                 }
+                                // Tier 3: Early Anti-Adblock Defuser Injection at Document Start
+                                if (ChromiumAdBlocker.isEnabled && ChromiumAdBlocker.isAntiAdblockDefuserEnabled) {
+                                    view?.evaluateJavascript(ChromiumAdBlocker.EARLY_DEFUSER_JS, null)
+                                }
                             }
 
                             override fun onPageFinished(view: WebView?, url: String?) {
@@ -284,8 +288,8 @@ fun LiquidWebScreen(
                                     val currentBlocked = ChromiumAdBlocker.getBlockedCount(currentTab.id)
                                     localBlockedCount = currentBlocked
 
-                                    // Inject Chromium Cosmetic Ad-Block Script
-                                    if (ChromiumAdBlocker.isEnabled) {
+                                    // Tier 4 & 5: Inject Chromium Cosmetic Ad-Block & Anti-Freeze MutationObserver
+                                    if (ChromiumAdBlocker.isEnabled && ChromiumAdBlocker.isCosmeticHidingEnabled) {
                                         view?.evaluateJavascript(ChromiumAdBlocker.COSMETIC_AD_BLOCK_JS, null)
                                     }
 
@@ -306,7 +310,7 @@ fun LiquidWebScreen(
                                 }
                             }
 
-                            // Engine Socket-Level Request Interceptor
+                            // Engine Socket-Level Request Interceptor with Smart Defuser Mocking
                             override fun shouldInterceptRequest(
                                 view: WebView?,
                                 request: WebResourceRequest?
@@ -319,8 +323,8 @@ fun LiquidWebScreen(
                                 val reqUrl = request.url?.toString()
                                 if (ChromiumAdBlocker.isEnabled && ChromiumAdBlocker.isAdOrTracker(reqUrl, currentDomain)) {
                                     ChromiumAdBlocker.recordBlockedRequest(currentTab.id)
-                                    // Do NOT post state changes to parent here; this avoids infinite reload loops!
-                                    return ChromiumAdBlocker.createBlockedResponse()
+                                    // Tier 2: Return smart defuser response (JS shims, 1x1 pixels, blank HTML) so page doesn't crash or abort loading!
+                                    return ChromiumAdBlocker.createSmartDefuserResponse(reqUrl)
                                 }
                                 return super.shouldInterceptRequest(view, request)
                             }
