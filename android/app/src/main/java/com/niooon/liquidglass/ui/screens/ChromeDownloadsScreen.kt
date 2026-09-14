@@ -481,6 +481,8 @@ private fun FilterChipsRow(
                     selectedLabelColor = Color(0xFF0369A1)
                 ),
                 border = FilterChipDefaults.filterChipBorder(
+                    enabled = true,
+                    selected = isSelected,
                     borderColor = if (isSelected) Color(0xFFBAE6FD) else Color(0xFFE2E8F0),
                     selectedBorderColor = Color(0xFF0284C7),
                     borderWidth = 1.dp

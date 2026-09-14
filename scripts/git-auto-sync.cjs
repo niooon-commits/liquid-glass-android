@@ -104,7 +104,9 @@ async function autoSync() {
     runCmd("git add -A");
 
     // Formulate descriptive commit message
-    const customMsg = process.argv.slice(2).join(" ").trim();
+    const rawArgs = process.argv.slice(2);
+    const checkBuildRequested = rawArgs.includes("--check-build") || rawArgs.includes("-b");
+    const customMsg = rawArgs.filter(a => !a.startsWith("--") && !a.startsWith("-")).join(" ").trim();
     let commitMsg = customMsg;
 
     if (!commitMsg) {
@@ -155,8 +157,18 @@ async function autoSync() {
 
   // 9. Display latest commit SHA
   const latestCommit = runCmd("git log -1 --oneline").trim();
+  const latestHeadSha = runCmd("git rev-parse HEAD").trim();
   console.log(`[auto-sync] Remote is now at: ${latestCommit}`);
   console.log("==========================================");
+
+  // 10. Automatically check Android CI build if requested or if android files were modified
+  const rawArgs = process.argv.slice(2);
+  const checkBuildRequested = rawArgs.includes("--check-build") || rawArgs.includes("-b");
+  if (checkBuildRequested) {
+    console.log("\n[auto-sync] Triggering Android CI/CD build tracker...");
+    const { trackAndroidBuild } = require("./check-android-build.cjs");
+    await trackAndroidBuild({ sha: latestHeadSha });
+  }
 }
 
 autoSync().catch(err => {
