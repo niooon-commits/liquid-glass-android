@@ -44,8 +44,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -82,10 +84,15 @@ fun LiquidWebScreen(
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
 
+    val currentTab by rememberUpdatedState(tab)
+    val currentOnTabUpdated by rememberUpdatedState(onTabUpdated)
+
     var webViewInstance by remember { mutableStateOf<WebView?>(null) }
-    var currentUrl by remember { mutableStateOf(tab.url) }
-    var currentDomain by remember { mutableStateOf(tab.domain) }
-    var pageTitle by remember { mutableStateOf(tab.title) }
+    var currentUrl by remember(tab.id) { mutableStateOf(tab.url) }
+    var currentDomain by remember(tab.id) { mutableStateOf(tab.domain) }
+    var pageTitle by remember(tab.id) { mutableStateOf(tab.title) }
+    var lastLoadedUrl by remember(tab.id) { mutableStateOf("") }
+    var localBlockedCount by remember(tab.id) { mutableIntStateOf(tab.blockedAdCount) }
     var canGoBack by remember { mutableStateOf(false) }
     var canGoForward by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(true) }
@@ -119,6 +126,7 @@ fun LiquidWebScreen(
             onDismiss = { showChromiumInfo = false },
             onVisitChromiumOrg = {
                 val target = "https://www.chromium.org/chromium-projects/"
+                lastLoadedUrl = target
                 currentUrl = target
                 currentDomain = UrlUtils.extractDomain(target)
                 webViewInstance?.loadUrl(target)
@@ -138,9 +146,10 @@ fun LiquidWebScreen(
         }
     }
 
-    // React to external URL changes (e.g. from tab change)
+    // React to external URL changes only (not internal navigations or redirects)
     LaunchedEffect(tab.url) {
-        if (tab.url.isNotBlank() && tab.url != currentUrl) {
+        if (tab.url.isNotBlank() && tab.url != lastLoadedUrl && tab.url != currentUrl) {
+            lastLoadedUrl = tab.url
             currentUrl = tab.url
             currentDomain = UrlUtils.extractDomain(tab.url)
             webViewInstance?.loadUrl(tab.url)
@@ -164,10 +173,11 @@ fun LiquidWebScreen(
                 currentUrl = currentUrl,
                 tabCount = tabCount,
                 isDesktopMode = isDesktopMode,
-                blockedAdCount = tab.blockedAdCount,
+                blockedAdCount = localBlockedCount,
                 onHomeClick = onHomeClick,
                 onSearchSubmit = { newQuery ->
                     val formatted = UrlUtils.formatInputToUrl(newQuery)
+                    lastLoadedUrl = formatted
                     currentUrl = formatted
                     currentDomain = UrlUtils.extractDomain(formatted)
                     webViewInstance?.loadUrl(formatted)
@@ -253,42 +263,46 @@ fun LiquidWebScreen(
                                 super.onPageStarted(view, url, favicon)
                                 isLoading = true
                                 url?.let {
+                                    lastLoadedUrl = it
                                     currentUrl = it
                                     currentDomain = UrlUtils.extractDomain(it)
-                                    ChromiumAdBlocker.resetTabCount(tab.id)
                                 }
                             }
 
                             override fun onPageFinished(view: WebView?, url: String?) {
                                 super.onPageFinished(view, url)
                                 isLoading = false
-                                url?.let {
-                                    currentUrl = it
-                                    currentDomain = UrlUtils.extractDomain(it)
-                                    val titleStr = view?.title ?: currentDomain
+                                url?.let { finishedUrl ->
+                                    lastLoadedUrl = finishedUrl
+                                    currentUrl = finishedUrl
+                                    currentDomain = UrlUtils.extractDomain(finishedUrl)
+                                    val titleStr = view?.title?.takeIf { it.isNotBlank() } ?: currentDomain
                                     pageTitle = titleStr
                                     canGoBack = view?.canGoBack() ?: false
                                     canGoForward = view?.canGoForward() ?: false
+
+                                    val currentBlocked = ChromiumAdBlocker.getBlockedCount(currentTab.id)
+                                    localBlockedCount = currentBlocked
 
                                     // Inject Chromium Cosmetic Ad-Block Script
                                     if (ChromiumAdBlocker.isEnabled) {
                                         view?.evaluateJavascript(ChromiumAdBlocker.COSMETIC_AD_BLOCK_JS, null)
                                     }
 
-                                    val currentBlocked = ChromiumAdBlocker.getBlockedCount(tab.id)
-
-                                    // Update parent tab state
-                                    onTabUpdated(
-                                        tab.copy(
-                                            url = it,
-                                            domain = currentDomain,
-                                            title = titleStr,
-                                            isHome = false,
-                                            canGoBack = canGoBack,
-                                            canGoForward = canGoForward,
-                                            blockedAdCount = currentBlocked
+                                    // Only notify parent when URL or title or navigation status actually changed
+                                    if (currentTab.url != finishedUrl || currentTab.title != titleStr || currentTab.canGoBack != canGoBack || currentTab.canGoForward != canGoForward) {
+                                        currentOnTabUpdated(
+                                            currentTab.copy(
+                                                url = finishedUrl,
+                                                domain = currentDomain,
+                                                title = titleStr,
+                                                isHome = false,
+                                                canGoBack = canGoBack,
+                                                canGoForward = canGoForward,
+                                                blockedAdCount = currentBlocked
+                                            )
                                         )
-                                    )
+                                    }
                                 }
                             }
 
@@ -297,13 +311,15 @@ fun LiquidWebScreen(
                                 view: WebView?,
                                 request: WebResourceRequest?
                             ): WebResourceResponse? {
-                                val reqUrl = request?.url?.toString()
-                                if (ChromiumAdBlocker.isEnabled && ChromiumAdBlocker.isAdOrTracker(reqUrl)) {
-                                    ChromiumAdBlocker.recordBlockedRequest(tab.id)
-                                    val currentBlocked = ChromiumAdBlocker.getBlockedCount(tab.id)
-                                    view?.post {
-                                        onTabUpdated(tab.copy(blockedAdCount = currentBlocked))
-                                    }
+                                // 1. Never block the main frame document
+                                if (request == null || request.isForMainFrame) {
+                                    return super.shouldInterceptRequest(view, request)
+                                }
+
+                                val reqUrl = request.url?.toString()
+                                if (ChromiumAdBlocker.isEnabled && ChromiumAdBlocker.isAdOrTracker(reqUrl, currentDomain)) {
+                                    ChromiumAdBlocker.recordBlockedRequest(currentTab.id)
+                                    // Do NOT post state changes to parent here; this avoids infinite reload loops!
                                     return ChromiumAdBlocker.createBlockedResponse()
                                 }
                                 return super.shouldInterceptRequest(view, request)
@@ -313,7 +329,26 @@ fun LiquidWebScreen(
                                 view: WebView?,
                                 request: WebResourceRequest?
                             ): Boolean {
-                                return false
+                                val reqUri = request?.url ?: return false
+                                val scheme = reqUri.scheme?.lowercase() ?: ""
+
+                                // Keep standard web navigation inside WebView
+                                if (scheme == "http" || scheme == "https") {
+                                    return false
+                                }
+
+                                // Safely handle custom deep-links (intent://, tel:, mailto:, etc.) without looping or crashing
+                                return try {
+                                    val intent = Intent.parseUri(reqUri.toString(), Intent.URI_INTENT_SCHEME)
+                                    if (intent != null) {
+                                        context.startActivity(intent)
+                                        true
+                                    } else {
+                                        false
+                                    }
+                                } catch (_: Exception) {
+                                    true
+                                }
                             }
                         }
 
@@ -326,8 +361,9 @@ fun LiquidWebScreen(
                                 }
                             },
                             onTitleReceived = { title ->
-                                pageTitle = title
-                                onTabUpdated(tab.copy(title = title))
+                                if (title.isNotBlank() && title != pageTitle) {
+                                    pageTitle = title
+                                }
                             },
                             onShowCustomView = { view, callback ->
                                 customFullscreenView = view
@@ -340,7 +376,10 @@ fun LiquidWebScreen(
                         )
 
                         // Load initial formatted URL
-                        val target = if (tab.url.isNotBlank()) tab.url else "https://www.google.com"
+                        val target = if (currentTab.url.isNotBlank()) currentTab.url else "https://www.google.com"
+                        lastLoadedUrl = target
+                        currentUrl = target
+                        currentDomain = UrlUtils.extractDomain(target)
                         loadUrl(target)
                         webViewInstance = this
                     }

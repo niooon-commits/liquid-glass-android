@@ -39,3 +39,13 @@ When performing GitHub, Vercel, or Supabase operations:
      - 🔍 Dead-Code & Integrity (Zero Orphan or Broken References)
      - 🛡️ Architecture Health
 
+## Mandatory GitHub Auto-Sync Policy (github-auto-sync)
+- **Engine Script**: `scripts/git-auto-sync.cjs` (or `npm run git:sync`)
+- **Skill Reference**: `/skills/github-auto-sync/SKILL.md`
+- **MANDATORY EXECUTION RULE**:
+  On EVERY turn where ANY code, asset, or file is modified, created, or fixed:
+  1. The agent MUST NEVER conclude the turn with uncommitted or unpushed changes.
+  2. Always execute `node scripts/git-auto-sync.cjs "[concise semantic commit message]"` (or `npm run git:sync`).
+  3. The script dynamically retrieves credentials from NIOOON Token Vault, commits all changes, and pushes to `niooon-commits/liquid-glass-android` (`main`).
+  4. Always report the push status, commit SHA, and CI build status to the user.
+

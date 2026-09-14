@@ -6,9 +6,11 @@ Whenever this AI coding agent writes, modifies, refactors, or fixes code in this
 2. **Post-Sync**: Run `code-review-graph update` or `code-review-graph build` after making changes.
 3. **Integrity**: Run `code-review-graph dead-code` and `code-review-graph detect-changes`.
 4. **Build Verification**: Run `compile_applet` (and verify Android APK workflows if Android files are touched).
-5. **Always Report**: Append the structured "Code Review Graph Verification & Build Results" to the user response every time code is touched.
+5. **GitHub Auto-Sync**: Run `node scripts/git-auto-sync.cjs "[message]"` to push all changes to GitHub `main`.
+6. **Always Report**: Append the structured "Code Review Graph Verification & Build Results" and Git push status to the user response every time code is touched.
 
 Skills Reference:
+- `/skills/github-auto-sync/SKILL.md`
 - `/skills/code-review-graph/SKILL.md`
 - `/skills/crg-review-reporter/SKILL.md`
 - `/skills/niooon-automation/SKILL.md`

@@ -27,7 +27,7 @@ import androidx.webkit.WebViewFeature
 object ChromiumEngineManager {
 
     private const val CHROMIUM_MOBILE_USER_AGENT =
-        "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36 LiquidGlass/1.0"
+        "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36"
 
     private const val CHROMIUM_DESKTOP_USER_AGENT =
         "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
@@ -106,12 +106,11 @@ object ChromiumEngineManager {
             userAgentString = if (isDesktopMode) {
                 CHROMIUM_DESKTOP_USER_AGENT
             } else {
-                val defaultUA = try {
+                try {
                     WebSettings.getDefaultUserAgent(context)
                 } catch (_: Exception) {
                     CHROMIUM_MOBILE_USER_AGENT
                 }
-                "$defaultUA LiquidGlass/1.0"
             }
         }
 

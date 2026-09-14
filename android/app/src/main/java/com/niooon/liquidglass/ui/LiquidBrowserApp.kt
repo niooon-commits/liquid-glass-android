@@ -2,6 +2,7 @@ package com.niooon.liquidglass.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -132,26 +133,28 @@ fun LiquidBrowserApp() {
         }
 
         ScreenMode.WEB_VIEW -> {
-            LiquidWebScreen(
-                tab = activeTab,
-                tabCount = tabs.size,
-                onHomeClick = {
-                    // Mark current tab as home or switch to home view
-                    screenMode = ScreenMode.HOME
-                },
-                onNewTabClick = {
-                    openNewTab(null)
-                },
-                onTabsOverviewClick = {
-                    screenMode = ScreenMode.TABS_OVERVIEW
-                },
-                onCloseTabClick = {
-                    closeTab(activeTab.id)
-                },
-                onTabUpdated = { updatedTab ->
-                    tabs = tabs.map { if (it.id == updatedTab.id) updatedTab else it }
-                }
-            )
+            key(activeTab.id) {
+                LiquidWebScreen(
+                    tab = activeTab,
+                    tabCount = tabs.size,
+                    onHomeClick = {
+                        // Mark current tab as home or switch to home view
+                        screenMode = ScreenMode.HOME
+                    },
+                    onNewTabClick = {
+                        openNewTab(null)
+                    },
+                    onTabsOverviewClick = {
+                        screenMode = ScreenMode.TABS_OVERVIEW
+                    },
+                    onCloseTabClick = {
+                        closeTab(activeTab.id)
+                    },
+                    onTabUpdated = { updatedTab ->
+                        tabs = tabs.map { if (it.id == updatedTab.id) updatedTab else it }
+                    }
+                )
+            }
         }
 
         ScreenMode.TABS_OVERVIEW -> {

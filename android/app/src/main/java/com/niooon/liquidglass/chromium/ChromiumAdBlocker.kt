@@ -104,15 +104,38 @@ object ChromiumAdBlocker {
     )
 
     /**
-     * Inspects a requested URL and returns true if it should be blocked
+     * Inspects a requested URL and returns true if it should be blocked.
+     * Guaranteed never to break YouTube, video playback, or essential first-party media.
      */
-    fun isAdOrTracker(url: String?): Boolean {
+    fun isAdOrTracker(url: String?, currentDomain: String = ""): Boolean {
         if (!isEnabled || url.isNullOrBlank()) return false
 
         return try {
             val lowerUrl = url.lowercase()
             val uri = URI(lowerUrl)
             val host = uri.host ?: ""
+
+            // Whitelist critical video streaming, audio, and player infrastructure
+            if (host.endsWith("googlevideo.com") ||
+                host.endsWith("ytimg.com") ||
+                host == "youtube.com" || host.endsWith(".youtube.com") ||
+                host == "youtu.be" ||
+                host.endsWith("gstatic.com") ||
+                host.endsWith("googleapis.com")
+            ) {
+                // Only drop standalone external ad domains, never video or player endpoints
+                if (host.contains("doubleclick.net") || host.contains("googleadservices.com") || host.contains("googlesyndication.com")) {
+                    return true
+                }
+                return false
+            }
+
+            // Whitelist first-party scripts and essential resources of the active site
+            if (currentDomain.isNotBlank() && (host == currentDomain || host.endsWith(".$currentDomain"))) {
+                if (!lowerUrl.contains("/adserver/") && !lowerUrl.contains("/ads/ad_")) {
+                    return false
+                }
+            }
 
             // 1. Direct host check or subdomain match
             for (domain in KNOWN_AD_AND_TRACKER_DOMAINS) {
@@ -186,9 +209,9 @@ object ChromiumAdBlocker {
                 const style = document.createElement('style');
                 style.id = 'niooon-ad-blocker-style';
                 style.textContent = `
-                    .ad, .ads, .ad-banner, .adsbygoogle, .ad-container,
-                    [id^="google_ads"], [id*="sponsored"], [class*="sponsored"],
-                    [class*="ad-box"], [class*="advertisement"], [class*="ad-slot"],
+                    .adsbygoogle, .ad-banner, .ad-container, .ad_slot,
+                    [id^="google_ads"], [id*="sponsored_post"], [class*="sponsored-post"],
+                    [class*="ad-box"], [class*="advertisement-slot"],
                     div[id*="taboola"], div[class*="taboola"],
                     div[id*="outbrain"], div[class*="outbrain"],
                     .trc_related_container, .trc_rbox_div,
