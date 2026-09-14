@@ -9,7 +9,7 @@ description: Mandatory post-code observation and review reporter. Automatically 
 Whenever code is written, modified, refactored, or fixed in this repository:
 1. The agent **MUST** run `code-review-graph` observation commands.
 2. The agent **MUST** verify and compile the application (`compile_applet` for Web, or CI verification for Android).
-3. The agent **MUST** present a standardized, concise **"Code Review Graph রেজাল্ট ও বিল্ড পর্যবেক্ষণ"** summary in the final response to the user.
+3. The agent **MUST** present a standardized, concise **"Code Review Graph Verification & Build Results"** summary in the final response to the user.
 
 > **CRITICAL**: This is a mandatory protocol. The agent must NEVER finish a code-editing turn without executing this observation and appending the concise review result.
 
@@ -47,15 +47,15 @@ Verify that no orphan symbols or broken connections were left behind:
 ---
 
 ## 3. Mandatory User Response Template
-Every response containing code edits must conclude with this structured summary (in Bengali or matching the user's language):
+Every response containing code edits must conclude with this structured summary in English:
 
 ```markdown
-### 📊 Code Review Graph পর্যবেক্ষণ ও বিল্ড রেজাল্ট:
-- 🏗️ **বিল্ড স্ট্যাটাস**: [সফল (Compiled Successfully) / ত্রুটিহীন]
-- 🌐 **গ্রাফ পরিসংখ্যান**: [X টি নোড, Y টি এজ, Z টি ফাইল ইনডেক্সড]
-- 🎯 **ব্লাস্ট-রেডিয়াস ও ইমপ্যাক্ট**: [পরিবর্তিত ফাইল এবং প্রভাবিত কম্পোনেন্ট/ফাংশনসমূহ]
-- 🔍 **ডেড-কোড ও ক্লিনলিনেস**: [কোনো অনাথ বা ব্রোকেন রেফারেন্স নেই / ফলাফল]
-- 🛡️ **আর্কিটেকচার হেলথ**: [মডিউল কাপলিং স্বাভাবিক ও সুরক্ষিত]
+### 📊 Code Review Graph Verification & Build Results:
+- 🏗️ **Build Status**: [Clean / Compiled Successfully / 0 Errors]
+- 🌐 **Graph Stats**: [X Nodes, Y Edges, Z Files Indexed]
+- 🎯 **Blast-Radius & Impact**: [Modified files, affected components/functions]
+- 🔍 **Dead-Code & Cleanliness**: [Zero orphan or broken references]
+- 🛡️ **Architecture Health**: [Modular, decoupled, and secure]
 ```
 
 ---

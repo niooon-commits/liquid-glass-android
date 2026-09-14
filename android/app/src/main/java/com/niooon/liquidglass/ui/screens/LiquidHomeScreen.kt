@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -52,40 +51,26 @@ fun LiquidHomeScreen(
         )
     )
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        bottomBar = {
-            LiquidBottomBar(
-                modifier = Modifier
-                    .navigationBarsPadding()
-                    .padding(bottom = 12.dp),
-                tabCount = tabCount,
-                canGoBack = false,
-                canGoForward = false,
-                onBackClick = {},
-                onForwardClick = {},
-                onSearchClick = {
-                    // Trigger new search focus
-                },
-                onTabsClick = onTabsClick,
-                onMenuClick = onMenuClick
-            )
-        }
-    ) { innerPadding ->
-        Box(
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(brush = backgroundBrush)
+    ) {
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(brush = backgroundBrush)
+                .statusBarsPadding()
+                .navigationBarsPadding()
         ) {
+            // Scrollable Content Area - strictly confined below status bar and above bottom bar
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
-                    .statusBarsPadding()
-                    .padding(innerPadding),
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .verticalScroll(scrollState),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 // 1. Google Multi-Color Logo & Profile Icon
                 GoogleLogoHeader(
@@ -94,7 +79,7 @@ fun LiquidHomeScreen(
                     }
                 )
 
-                Spacer(modifier = Modifier.height(18.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 // 2. Liquid Glass Pill Search Bar
                 LiquidSearchBar(
@@ -138,8 +123,34 @@ fun LiquidHomeScreen(
                     }
                 )
 
-                Spacer(modifier = Modifier.height(80.dp))
+                Spacer(modifier = Modifier.height(20.dp))
             }
+
+            // 5. Liquid Glass Bottom Navigation Bar
+            LiquidBottomBar(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                tabCount = tabCount,
+                canGoBack = false,
+                canGoForward = false,
+                onBackClick = {},
+                onForwardClick = {},
+                onSearchClick = {
+                    // Trigger new search focus
+                },
+                onTabsClick = onTabsClick,
+                onMenuClick = onMenuClick
+            )
         }
+
+        // Snackbar Host positioned above bottom bar
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
+                .padding(bottom = 80.dp)
+        )
     }
 }

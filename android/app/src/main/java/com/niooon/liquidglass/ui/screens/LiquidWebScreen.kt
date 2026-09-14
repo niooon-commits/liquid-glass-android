@@ -1,16 +1,16 @@
 package com.niooon.liquidglass.ui.screens
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebChromeClient
-import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
-import android.webkit.WebSettings
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -30,7 +30,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -42,18 +41,15 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -62,10 +58,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.niooon.liquidglass.chromium.ChromiumAdBlocker
+import com.niooon.liquidglass.chromium.ChromiumContentShell
 import com.niooon.liquidglass.chromium.ChromiumEngineManager
 import com.niooon.liquidglass.model.BrowserTab
 import com.niooon.liquidglass.ui.components.BrowserTopBar
 import com.niooon.liquidglass.ui.components.ChromiumInfoDialog
+import com.niooon.liquidglass.ui.components.ChromiumShieldDialog
 import com.niooon.liquidglass.utils.UrlUtils
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -93,13 +92,28 @@ fun LiquidWebScreen(
     var progressFloat by remember { mutableFloatStateOf(0f) }
     var isDesktopMode by remember { mutableStateOf(false) }
     var showChromiumInfo by remember { mutableStateOf(false) }
+    var showShieldDialog by remember { mutableStateOf(false) }
+    var customFullscreenView by remember { mutableStateOf<View?>(null) }
+    var customViewCallback by remember { mutableStateOf<WebChromeClient.CustomViewCallback?>(null) }
 
-    // Initialize Chromium Safe Browsing and cookies
+    // Initialize Chromium Safe Browsing and persistent cookies
     LaunchedEffect(Unit) {
         ChromiumEngineManager.initializeChromium(context)
     }
 
-    // Chromium Engine Diagnostics Dialog
+    // Chromium Shield Dialog (Ad-Blocker & Tracker Protection)
+    if (showShieldDialog) {
+        ChromiumShieldDialog(
+            tabId = tab.id,
+            domain = currentDomain,
+            onDismiss = { showShieldDialog = false },
+            onReload = {
+                webViewInstance?.reload()
+            }
+        )
+    }
+
+    // Chromium Engine & Content Shell Diagnostics Dialog
     if (showChromiumInfo) {
         ChromiumInfoDialog(
             onDismiss = { showChromiumInfo = false },
@@ -114,7 +128,10 @@ fun LiquidWebScreen(
 
     // Intercept hardware / gesture back navigation
     BackHandler(enabled = true) {
-        if (webViewInstance?.canGoBack() == true) {
+        if (customFullscreenView != null) {
+            customViewCallback?.onCustomViewHidden()
+            customFullscreenView = null
+        } else if (webViewInstance?.canGoBack() == true) {
             webViewInstance?.goBack()
         } else {
             onHomeClick()
@@ -135,7 +152,7 @@ fun LiquidWebScreen(
             .fillMaxSize()
             .background(Color(0xFFF8FAFC))
     ) {
-        // Status bar area + Chrome Top Bar
+        // Status bar area + Chrome Omnibox Top Bar
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -147,6 +164,7 @@ fun LiquidWebScreen(
                 currentUrl = currentUrl,
                 tabCount = tabCount,
                 isDesktopMode = isDesktopMode,
+                blockedAdCount = tab.blockedAdCount,
                 onHomeClick = onHomeClick,
                 onSearchSubmit = { newQuery ->
                     val formatted = UrlUtils.formatInputToUrl(newQuery)
@@ -178,11 +196,6 @@ fun LiquidWebScreen(
                         ChromiumEngineManager.applyChromiumSettings(wv, isDesktopMode)
                         wv.reload()
                     }
-                    Toast.makeText(
-                        context,
-                        if (isDesktopMode) "Switched to Desktop Site (Chromium)" else "Switched to Mobile Site (Chromium)",
-                        Toast.LENGTH_SHORT
-                    ).show()
                 },
                 onCloseTabClick = onCloseTabClick,
                 onOpenInCustomTab = {
@@ -190,13 +203,16 @@ fun LiquidWebScreen(
                 },
                 onChromiumInfoClick = {
                     showChromiumInfo = true
+                },
+                onShieldClick = {
+                    showShieldDialog = true
                 }
             )
         }
 
-        // Animated Web Page Loading Progress Indicator (Chrome-style slim blue line)
+        // Web Loading Progress Bar
         AnimatedVisibility(
-            visible = isLoading,
+            visible = isLoading && progressFloat < 1.0f,
             enter = fadeIn(),
             exit = fadeOut()
         ) {
@@ -225,9 +241,13 @@ fun LiquidWebScreen(
                             ViewGroup.LayoutParams.MATCH_PARENT
                         )
 
-                        // Apply Chromium Project Architecture & WebSettings
+                        // 1. Apply Chromium WebSettings & User-Agent
                         ChromiumEngineManager.applyChromiumSettings(this, isDesktopMode)
 
+                        // 2. Configure Official Chromium Content Shell Architecture
+                        ChromiumContentShell.configureContentShell(ctx, this)
+
+                        // 3. Chromium Network Interceptor (Ad-Blocker & Tracker Filter)
                         webViewClient = object : WebViewClient() {
                             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                                 super.onPageStarted(view, url, favicon)
@@ -235,6 +255,7 @@ fun LiquidWebScreen(
                                 url?.let {
                                     currentUrl = it
                                     currentDomain = UrlUtils.extractDomain(it)
+                                    ChromiumAdBlocker.resetTabCount(tab.id)
                                 }
                             }
 
@@ -249,6 +270,13 @@ fun LiquidWebScreen(
                                     canGoBack = view?.canGoBack() ?: false
                                     canGoForward = view?.canGoForward() ?: false
 
+                                    // Inject Chromium Cosmetic Ad-Block Script
+                                    if (ChromiumAdBlocker.isEnabled) {
+                                        view?.evaluateJavascript(ChromiumAdBlocker.COSMETIC_AD_BLOCK_JS, null)
+                                    }
+
+                                    val currentBlocked = ChromiumAdBlocker.getBlockedCount(tab.id)
+
                                     // Update parent tab state
                                     onTabUpdated(
                                         tab.copy(
@@ -257,38 +285,59 @@ fun LiquidWebScreen(
                                             title = titleStr,
                                             isHome = false,
                                             canGoBack = canGoBack,
-                                            canGoForward = canGoForward
+                                            canGoForward = canGoForward,
+                                            blockedAdCount = currentBlocked
                                         )
                                     )
                                 }
+                            }
+
+                            // Engine Socket-Level Request Interceptor
+                            override fun shouldInterceptRequest(
+                                view: WebView?,
+                                request: WebResourceRequest?
+                            ): WebResourceResponse? {
+                                val reqUrl = request?.url?.toString()
+                                if (ChromiumAdBlocker.isEnabled && ChromiumAdBlocker.isAdOrTracker(reqUrl)) {
+                                    ChromiumAdBlocker.recordBlockedRequest(tab.id)
+                                    val currentBlocked = ChromiumAdBlocker.getBlockedCount(tab.id)
+                                    view?.post {
+                                        onTabUpdated(tab.copy(blockedAdCount = currentBlocked))
+                                    }
+                                    return ChromiumAdBlocker.createBlockedResponse()
+                                }
+                                return super.shouldInterceptRequest(view, request)
                             }
 
                             override fun shouldOverrideUrlLoading(
                                 view: WebView?,
                                 request: WebResourceRequest?
                             ): Boolean {
-                                // Load inside our webview
                                 return false
                             }
                         }
 
-                        webChromeClient = object : WebChromeClient() {
-                            override fun onProgressChanged(view: WebView?, newProgress: Int) {
-                                super.onProgressChanged(view, newProgress)
+                        // 4. Content Shell WebChromeClient (HTML5 Video, DevTools, Progress)
+                        webChromeClient = ChromiumContentShell.createContentShellChromeClient(
+                            onProgress = { newProgress ->
                                 progressFloat = (newProgress / 100f).coerceIn(0.05f, 1.0f)
                                 if (newProgress >= 100) {
                                     isLoading = false
                                 }
+                            },
+                            onTitleReceived = { title ->
+                                pageTitle = title
+                                onTabUpdated(tab.copy(title = title))
+                            },
+                            onShowCustomView = { view, callback ->
+                                customFullscreenView = view
+                                customViewCallback = callback
+                            },
+                            onHideCustomView = {
+                                customFullscreenView = null
+                                customViewCallback = null
                             }
-
-                            override fun onReceivedTitle(view: WebView?, title: String?) {
-                                super.onReceivedTitle(view, title)
-                                title?.let {
-                                    pageTitle = it
-                                    onTabUpdated(tab.copy(title = it))
-                                }
-                            }
-                        }
+                        )
 
                         // Load initial formatted URL
                         val target = if (tab.url.isNotBlank()) tab.url else "https://www.google.com"
@@ -300,9 +349,27 @@ fun LiquidWebScreen(
                     webViewInstance = webView
                 }
             )
+
+            // HTML5 Fullscreen Video Overlay (YouTube, etc.)
+            customFullscreenView?.let { fullscreenView ->
+                AndroidView(
+                    modifier = Modifier.fillMaxSize(),
+                    factory = {
+                        FrameLayout(it).apply {
+                            addView(
+                                fullscreenView,
+                                ViewGroup.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.MATCH_PARENT
+                                )
+                            )
+                        }
+                    }
+                )
+            }
         }
 
-        // Bottom Web Action Bar
+        // Bottom Web Action Bar (Navigation)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -379,7 +446,7 @@ fun LiquidWebScreen(
                     )
                 }
 
-                // Tabs Counter Button
+                // Chrome Tabs Counter Button
                 Box(
                     modifier = Modifier
                         .size(30.dp)

@@ -264,6 +264,22 @@ fun TabsOverviewScreen(
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
+
+                                    if (tab.blockedAdCount > 0) {
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .background(Color(0xFF0284C7).copy(alpha = 0.4f))
+                                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                                        ) {
+                                            Text(
+                                                text = "🛡️ ${tab.blockedAdCount}",
+                                                fontSize = 9.sp,
+                                                color = Color(0xFF38BDF8),
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
                                 }
 
                                 // Close Tab Button (✕)

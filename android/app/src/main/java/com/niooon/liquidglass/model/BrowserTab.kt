@@ -7,7 +7,8 @@ data class BrowserTab(
     val domain: String = "google.com",
     val isHome: Boolean = true,
     val canGoBack: Boolean = false,
-    val canGoForward: Boolean = false
+    val canGoForward: Boolean = false,
+    val blockedAdCount: Int = 0
 )
 
 enum class ScreenMode {

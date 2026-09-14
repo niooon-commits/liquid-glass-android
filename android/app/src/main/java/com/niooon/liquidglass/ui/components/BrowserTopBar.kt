@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -26,17 +28,20 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DesktopWindows
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -66,6 +71,7 @@ fun BrowserTopBar(
     currentUrl: String,
     tabCount: Int,
     isDesktopMode: Boolean,
+    blockedAdCount: Int = 0,
     onHomeClick: () -> Unit,
     onSearchSubmit: (String) -> Unit,
     onNewTabClick: () -> Unit,
@@ -77,60 +83,193 @@ fun BrowserTopBar(
     onCloseTabClick: () -> Unit,
     onOpenInCustomTab: () -> Unit = {},
     onChromiumInfoClick: () -> Unit = {},
+    onShieldClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var isMenuExpanded by remember { mutableStateOf(false) }
     var isUrlEditOpen by remember { mutableStateOf(false) }
     var inputUrlText by remember { mutableStateOf(currentUrl) }
 
-    // Dialog for editing URL / Searching
+    // Popular suggestions for Chrome Omnibox
+    val popularWebsites = remember {
+        listOf(
+            "google.com" to "Google Search",
+            "youtube.com" to "YouTube",
+            "wikipedia.org" to "Wikipedia",
+            "github.com" to "GitHub",
+            "reddit.com" to "Reddit",
+            "twitter.com" to "X (Twitter)"
+        )
+    }
+
+    // Google Chrome Omnibox Search / URL Editor Dialog
     if (isUrlEditOpen) {
         AlertDialog(
             onDismissRequest = { isUrlEditOpen = false },
             title = {
-                Text(
-                    text = "Search or type URL",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = TextPrimary
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search",
+                        tint = Color(0xFF0284C7),
+                        modifier = Modifier.size(22.dp)
+                    )
+                    Text(
+                        text = "Chromium Omnibox",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 17.sp,
+                        color = TextPrimary
+                    )
+                }
             },
             text = {
-                Column {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    // Omnibox Input Pill
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp)
-                            .clip(RoundedCornerShape(24.dp))
+                            .height(46.dp)
+                            .clip(RoundedCornerShape(23.dp))
                             .background(Color(0xFFF1F5F9))
-                            .border(1.dp, Color(0xFFCBD5E1), RoundedCornerShape(24.dp))
-                            .padding(horizontal = 16.dp),
+                            .border(1.5.dp, Color(0xFF0284C7), RoundedCornerShape(23.dp))
+                            .padding(horizontal = 14.dp),
                         contentAlignment = Alignment.CenterStart
                     ) {
-                        BasicTextField(
-                            value = inputUrlText,
-                            onValueChange = { inputUrlText = it },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            textStyle = TextStyle(
-                                color = TextPrimary,
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Medium
-                            ),
-                            cursorBrush = SolidColor(Color(0xFF0284C7)),
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Uri,
-                                imeAction = ImeAction.Go
-                            ),
-                            keyboardActions = KeyboardActions(
-                                onGo = {
-                                    if (inputUrlText.isNotBlank()) {
-                                        onSearchSubmit(inputUrlText)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            BasicTextField(
+                                value = inputUrlText,
+                                onValueChange = { inputUrlText = it },
+                                modifier = Modifier.weight(1f),
+                                singleLine = true,
+                                textStyle = TextStyle(
+                                    color = TextPrimary,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Medium
+                                ),
+                                cursorBrush = SolidColor(Color(0xFF0284C7)),
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Uri,
+                                    imeAction = ImeAction.Go
+                                ),
+                                keyboardActions = KeyboardActions(
+                                    onGo = {
+                                        if (inputUrlText.isNotBlank()) {
+                                            onSearchSubmit(inputUrlText)
+                                            isUrlEditOpen = false
+                                        }
+                                    }
+                                )
+                            )
+
+                            if (inputUrlText.isNotBlank()) {
+                                IconButton(
+                                    onClick = { inputUrlText = "" },
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Clear",
+                                        tint = Color(0xFF64748B),
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // Suggestions Header
+                    Text(
+                        text = if (inputUrlText.isBlank()) "Quick Access" else "Suggestions",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF64748B)
+                    )
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp)
+                    ) {
+                        if (inputUrlText.isNotBlank()) {
+                            // Direct search action
+                            item {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            onSearchSubmit(inputUrlText)
+                                            isUrlEditOpen = false
+                                        }
+                                        .padding(vertical = 8.dp, horizontal = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Search,
+                                        contentDescription = null,
+                                        tint = Color(0xFF0284C7),
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Text(
+                                        text = "Search Google for \"$inputUrlText\"",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFF0284C7),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                            }
+                        }
+
+                        // Filtered suggestions
+                        val filtered = popularWebsites.filter {
+                            inputUrlText.isBlank() || it.first.contains(inputUrlText, ignoreCase = true) || it.second.contains(inputUrlText, ignoreCase = true)
+                        }
+
+                        items(filtered) { (siteUrl, siteName) ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        onSearchSubmit("https://$siteUrl")
                                         isUrlEditOpen = false
                                     }
+                                    .padding(vertical = 8.dp, horizontal = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Language,
+                                    contentDescription = null,
+                                    tint = Color(0xFF64748B),
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = siteName,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = TextPrimary
+                                    )
+                                    Text(
+                                        text = siteUrl,
+                                        fontSize = 11.sp,
+                                        color = Color(0xFF94A3B8)
+                                    )
                                 }
-                            )
-                        )
+                            }
+                        }
                     }
                 }
             },
@@ -156,7 +295,7 @@ fun BrowserTopBar(
         )
     }
 
-    // Top Chrome-style Navigation Bar
+    // Top Chrome-style Navigation & Omnibox Bar
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -179,7 +318,7 @@ fun BrowserTopBar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            // Home / Back Icon Button
+            // Home Icon Button
             IconButton(
                 onClick = onHomeClick,
                 modifier = Modifier.size(36.dp)
@@ -192,23 +331,19 @@ fun BrowserTopBar(
                 )
             }
 
-            // 1. Visited Website Domain Bar (Chrome-style capsule)
+            // 1. Google Chrome Omnibox Capsule
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .height(38.dp)
                     .clip(RoundedCornerShape(20.dp))
-                    .background(Color.White.copy(alpha = 0.9f))
+                    .background(Color.White.copy(alpha = 0.95f))
                     .border(
                         width = 1.dp,
                         color = Color(0xFFCBD5E1),
                         shape = RoundedCornerShape(20.dp)
                     )
-                    .clickable {
-                        inputUrlText = if (currentUrl.isNotBlank()) currentUrl else domain
-                        isUrlEditOpen = true
-                    }
-                    .padding(horizontal = 10.dp),
+                    .padding(horizontal = 8.dp),
                 contentAlignment = Alignment.CenterStart
             ) {
                 Row(
@@ -216,15 +351,36 @@ fun BrowserTopBar(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    // Security Lock Icon
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = "Secure Connection",
-                        tint = Color(0xFF16A34A), // Green lock indicator
-                        modifier = Modifier.size(13.dp)
-                    )
+                    // Security & Shield Icon (Clickable for AdBlock/Security Dialog)
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { onShieldClick() }
+                            .padding(horizontal = 4.dp, vertical = 2.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(3.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (blockedAdCount > 0) Icons.Default.Shield else Icons.Default.Lock,
+                                contentDescription = "Security & Shield",
+                                tint = if (blockedAdCount > 0) Color(0xFF0284C7) else Color(0xFF16A34A),
+                                modifier = Modifier.size(14.dp)
+                            )
+                            if (blockedAdCount > 0) {
+                                Text(
+                                    text = blockedAdCount.toString(),
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Color(0xFF0284C7)
+                                )
+                            }
+                        }
+                    }
 
-                    // Domain Text
+                    // Domain / URL Text (Tapping opens Omnibox input)
                     Text(
                         text = if (domain.isNotBlank()) domain else "Search or URL",
                         style = TextStyle(
@@ -234,8 +390,26 @@ fun BrowserTopBar(
                         ),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable {
+                                inputUrlText = if (currentUrl.isNotBlank()) currentUrl else domain
+                                isUrlEditOpen = true
+                            }
                     )
+
+                    // Quick Reload Icon inside Omnibox
+                    IconButton(
+                        onClick = onReloadClick,
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Reload",
+                            tint = Color(0xFF64748B),
+                            modifier = Modifier.size(15.dp)
+                        )
+                    }
                 }
             }
 
@@ -256,12 +430,12 @@ fun BrowserTopBar(
                 )
             }
 
-            // 3. Tab Counter Switcher Box ([N]) to view all tabs in a new page
+            // 3. Tab Counter Switcher Box ([N]) (Chrome for Android style)
             Box(
                 modifier = Modifier
                     .size(32.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color.White.copy(alpha = 0.85f))
+                    .background(Color.White.copy(alpha = 0.9f))
                     .border(1.5.dp, Color(0xFF334155), RoundedCornerShape(8.dp))
                     .clickable { onTabsOverviewClick() },
                 contentAlignment = Alignment.Center
@@ -306,6 +480,17 @@ fun BrowserTopBar(
                         onClick = {
                             isMenuExpanded = false
                             onNewTabClick()
+                        }
+                    )
+
+                    DropdownMenuItem(
+                        text = { Text("Ad & Tracker Shield", fontSize = 14.sp, fontWeight = FontWeight.SemiBold) },
+                        leadingIcon = {
+                            Icon(Icons.Default.Shield, contentDescription = null, tint = Color(0xFF0284C7), modifier = Modifier.size(18.dp))
+                        },
+                        onClick = {
+                            isMenuExpanded = false
+                            onShieldClick()
                         }
                     )
 
@@ -370,9 +555,9 @@ fun BrowserTopBar(
                     )
 
                     DropdownMenuItem(
-                        text = { Text("Chromium Engine Info", fontSize = 14.sp) },
+                        text = { Text("Chromium Content Shell", fontSize = 14.sp) },
                         leadingIcon = {
-                            Icon(Icons.Default.Info, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Icon(Icons.Default.Info, contentDescription = null, tint = Color(0xFF0284C7), modifier = Modifier.size(18.dp))
                         },
                         onClick = {
                             isMenuExpanded = false

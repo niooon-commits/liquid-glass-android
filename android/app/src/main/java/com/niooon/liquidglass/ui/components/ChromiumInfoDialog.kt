@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.DeveloperMode
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Speed
@@ -36,6 +38,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.niooon.liquidglass.chromium.ChromiumAdBlocker
+import com.niooon.liquidglass.chromium.ChromiumContentShell
 import com.niooon.liquidglass.chromium.ChromiumEngineManager
 
 @Composable
@@ -45,6 +49,7 @@ fun ChromiumInfoDialog(
 ) {
     val context = LocalContext.current
     val chromiumInfo = ChromiumEngineManager.getChromiumDiagnosticInfo(context)
+    val shellInfo = ChromiumContentShell.getContentShellDetails(context)
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -55,7 +60,7 @@ fun ChromiumInfoDialog(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(36.dp)
+                        .size(38.dp)
                         .clip(CircleShape)
                         .background(
                             Brush.linearGradient(
@@ -68,18 +73,18 @@ fun ChromiumInfoDialog(
                         imageVector = Icons.Default.Language,
                         contentDescription = "Chromium",
                         tint = Color.White,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(22.dp)
                     )
                 }
                 Column {
                     Text(
-                        text = "Chromium Project Engine",
+                        text = "Chromium Content Shell",
                         fontWeight = FontWeight.Bold,
                         fontSize = 17.sp,
                         color = Color(0xFF0F172A)
                     )
                     Text(
-                        text = "Powered by Google Chromium & Blink",
+                        text = "Google Blink Core • V8 JS • Ad-Block Engine",
                         fontSize = 11.sp,
                         color = Color(0xFF64748B)
                     )
@@ -91,39 +96,39 @@ fun ChromiumInfoDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 4.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = "This browser is powered by the open-source Chromium Project architecture, integrating Google's high-performance Blink rendering core and V8 JavaScript engine.",
+                    text = "Built on official Chromium Content Shell architecture with Google's multi-process sandboxing, high-speed Blink rendering, V8 execution, and socket-level ad & tracker blocking.",
                     fontSize = 12.sp,
                     lineHeight = 17.sp,
                     color = Color(0xFF334155)
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(2.dp))
 
                 ChromiumFeatureRow(
                     icon = Icons.Default.Speed,
                     title = "Blink & V8 Runtime",
-                    subtitle = chromiumInfo["Engine"] ?: "Chromium Core"
+                    subtitle = "${shellInfo["Package"]} (${shellInfo["Version"]})"
+                )
+
+                ChromiumFeatureRow(
+                    icon = Icons.Default.Block,
+                    title = "Ad & Tracker Blocker",
+                    subtitle = if (ChromiumAdBlocker.isEnabled) "Active Socket Interceptor (${ChromiumAdBlocker.totalBlockedGlobal.get()} blocked)" else "Disabled"
                 )
 
                 ChromiumFeatureRow(
                     icon = Icons.Default.Security,
-                    title = "Google Safe Browsing",
-                    subtitle = chromiumInfo["Safe Browsing"] ?: "Active Protection"
+                    title = "Google Safe Browsing & Sandboxing",
+                    subtitle = shellInfo["Multi-Process Isolation"] ?: "Hardware Sandboxed"
                 )
 
                 ChromiumFeatureRow(
-                    icon = Icons.Default.CheckCircle,
-                    title = "Process Architecture",
-                    subtitle = chromiumInfo["Multi-Process"] ?: "Isolated Renderer"
-                )
-
-                ChromiumFeatureRow(
-                    icon = Icons.Default.Language,
-                    title = "Chromium Custom Tabs",
-                    subtitle = "High speed native Chrome tab connection"
+                    icon = Icons.Default.DeveloperMode,
+                    title = "DevTools & Graphics Pipeline",
+                    subtitle = "${shellInfo["GPU Graphics Pipeline"]} • DevTools Enabled"
                 )
             }
         },
