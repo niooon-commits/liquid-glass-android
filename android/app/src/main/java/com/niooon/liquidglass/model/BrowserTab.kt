@@ -14,5 +14,6 @@ data class BrowserTab(
 enum class ScreenMode {
     HOME,
     WEB_VIEW,
-    TABS_OVERVIEW
+    TABS_OVERVIEW,
+    DOWNLOADS
 }

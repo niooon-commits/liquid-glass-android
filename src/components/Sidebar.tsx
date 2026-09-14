@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   LayoutDashboard,
+  Download,
   BarChart3,
   Users,
   CreditCard,
@@ -30,6 +31,7 @@ interface SidebarProps {
 const iconMap: Record<string, React.ElementType> = {
   Sparkles,
   LayoutDashboard,
+  Download,
   BarChart3,
   Users,
   CreditCard,

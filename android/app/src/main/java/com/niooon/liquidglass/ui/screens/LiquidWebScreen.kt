@@ -79,6 +79,7 @@ fun LiquidWebScreen(
     onTabsOverviewClick: () -> Unit,
     onCloseTabClick: () -> Unit,
     onTabUpdated: (BrowserTab) -> Unit,
+    onDownloadsClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -216,7 +217,8 @@ fun LiquidWebScreen(
                 },
                 onShieldClick = {
                     showShieldDialog = true
-                }
+                },
+                onDownloadsClick = onDownloadsClick
             )
         }
 

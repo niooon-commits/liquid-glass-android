@@ -65,6 +65,7 @@ fun TabsOverviewScreen(
     onCloseAllTabs: () -> Unit,
     onNewTab: () -> Unit,
     onBack: () -> Unit,
+    onDownloadsClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var isMenuOpen by remember { mutableStateOf(false) }
@@ -173,6 +174,22 @@ fun TabsOverviewScreen(
                                 .background(Color(0xFF1E293B))
                                 .border(1.dp, Color(0xFF334155), RoundedCornerShape(12.dp))
                         ) {
+                            DropdownMenuItem(
+                                text = { Text("Downloads", color = Color.White) },
+                                leadingIcon = {
+                                    Icon(
+                                        painter = androidx.compose.ui.res.painterResource(id = com.niooon.liquidglass.R.drawable.ic_download),
+                                        contentDescription = null,
+                                        tint = Color(0xFF38BDF8),
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                },
+                                onClick = {
+                                    isMenuOpen = false
+                                    onDownloadsClick()
+                                }
+                            )
+
                             DropdownMenuItem(
                                 text = { Text("Close All Tabs", color = Color(0xFFEF4444)) },
                                 leadingIcon = {

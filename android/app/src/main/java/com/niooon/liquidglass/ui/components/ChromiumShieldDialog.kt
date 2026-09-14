@@ -38,9 +38,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.niooon.liquidglass.R
 import com.niooon.liquidglass.chromium.ChromiumAdBlocker
 
 @Composable
@@ -77,7 +79,7 @@ fun ChromiumShieldDialog(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Shield,
+                        painter = painterResource(id = R.drawable.ic_security),
                         contentDescription = "Shield",
                         tint = Color.White,
                         modifier = Modifier.size(24.dp)

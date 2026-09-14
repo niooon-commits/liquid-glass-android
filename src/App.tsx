@@ -25,6 +25,7 @@ import { ActionModal } from './components/ActionModal';
 import { TransactionDetailModal } from './components/TransactionDetailModal';
 import { UsersView } from './components/UsersView';
 import { SettingsView } from './components/SettingsView';
+import { ChromeDownloadsView } from './components/ChromeDownloadsView';
 
 export default function App() {
   const [theme, setTheme] = useState<ThemeMode>(() => {
@@ -265,6 +266,10 @@ export default function App() {
                 onOpenActionModal={() => setIsActionModalOpen(true)}
               />
             </>
+          )}
+
+          {activeNav === 'downloads' && (
+            <ChromeDownloadsView onBack={() => setActiveNav('dashboard')} />
           )}
 
           {activeNav === 'analytics' && (

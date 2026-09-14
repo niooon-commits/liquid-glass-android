@@ -8,6 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.niooon.liquidglass.model.BrowserTab
 import com.niooon.liquidglass.model.ScreenMode
+import com.niooon.liquidglass.ui.screens.ChromeDownloadsScreen
 import com.niooon.liquidglass.ui.screens.LiquidHomeScreen
 import com.niooon.liquidglass.ui.screens.LiquidWebScreen
 import com.niooon.liquidglass.ui.screens.TabsOverviewScreen
@@ -152,6 +153,9 @@ fun LiquidBrowserApp() {
                     },
                     onTabUpdated = { updatedTab ->
                         tabs = tabs.map { if (it.id == updatedTab.id) updatedTab else it }
+                    },
+                    onDownloadsClick = {
+                        screenMode = ScreenMode.DOWNLOADS
                     }
                 )
             }
@@ -168,6 +172,23 @@ fun LiquidBrowserApp() {
                 onBack = {
                     val current = tabs.find { it.id == activeTabId }
                     screenMode = if (current?.isHome == true) ScreenMode.HOME else ScreenMode.WEB_VIEW
+                },
+                onDownloadsClick = {
+                    screenMode = ScreenMode.DOWNLOADS
+                }
+            )
+        }
+
+        ScreenMode.DOWNLOADS -> {
+            ChromeDownloadsScreen(
+                onBack = {
+                    val current = tabs.find { it.id == activeTabId }
+                    screenMode = if (current?.isHome == true) ScreenMode.HOME else ScreenMode.WEB_VIEW
+                },
+                onOpenFile = { downloadItem ->
+                    if (downloadItem.sourceUrl.isNotBlank()) {
+                        openUrl(downloadItem.sourceUrl)
+                    }
                 }
             )
         }

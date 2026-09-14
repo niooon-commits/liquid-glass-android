@@ -55,6 +55,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -62,6 +63,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.niooon.liquidglass.R
 import com.niooon.liquidglass.ui.theme.TextPrimary
 import com.niooon.liquidglass.utils.UrlUtils
 
@@ -84,6 +86,7 @@ fun BrowserTopBar(
     onOpenInCustomTab: () -> Unit = {},
     onChromiumInfoClick: () -> Unit = {},
     onShieldClick: () -> Unit = {},
+    onDownloadsClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var isMenuExpanded by remember { mutableStateOf(false) }
@@ -475,7 +478,12 @@ fun BrowserTopBar(
                     DropdownMenuItem(
                         text = { Text("New Tab", fontSize = 14.sp) },
                         leadingIcon = {
-                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_add),
+                                contentDescription = null,
+                                tint = Color(0xFF334155),
+                                modifier = Modifier.size(18.dp)
+                            )
                         },
                         onClick = {
                             isMenuExpanded = false
@@ -484,9 +492,30 @@ fun BrowserTopBar(
                     )
 
                     DropdownMenuItem(
-                        text = { Text("Ad & Tracker Shield", fontSize = 14.sp, fontWeight = FontWeight.SemiBold) },
+                        text = { Text("Downloads", fontSize = 14.sp, fontWeight = FontWeight.SemiBold) },
                         leadingIcon = {
-                            Icon(Icons.Default.Shield, contentDescription = null, tint = Color(0xFF0284C7), modifier = Modifier.size(18.dp))
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_download),
+                                contentDescription = null,
+                                tint = Color(0xFF0284C7),
+                                modifier = Modifier.size(18.dp)
+                            )
+                        },
+                        onClick = {
+                            isMenuExpanded = false
+                            onDownloadsClick()
+                        }
+                    )
+
+                    DropdownMenuItem(
+                        text = { Text("Ad & Tracker Shield", fontSize = 14.sp) },
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_security),
+                                contentDescription = null,
+                                tint = Color(0xFF0284C7),
+                                modifier = Modifier.size(18.dp)
+                            )
                         },
                         onClick = {
                             isMenuExpanded = false
@@ -497,7 +526,12 @@ fun BrowserTopBar(
                     DropdownMenuItem(
                         text = { Text("Reload", fontSize = 14.sp) },
                         leadingIcon = {
-                            Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_refresh),
+                                contentDescription = null,
+                                tint = Color(0xFF334155),
+                                modifier = Modifier.size(18.dp)
+                            )
                         },
                         onClick = {
                             isMenuExpanded = false
@@ -508,7 +542,12 @@ fun BrowserTopBar(
                     DropdownMenuItem(
                         text = { Text("Copy Link", fontSize = 14.sp) },
                         leadingIcon = {
-                            Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_content_copy),
+                                contentDescription = null,
+                                tint = Color(0xFF334155),
+                                modifier = Modifier.size(18.dp)
+                            )
                         },
                         onClick = {
                             isMenuExpanded = false
@@ -519,7 +558,12 @@ fun BrowserTopBar(
                     DropdownMenuItem(
                         text = { Text("Share", fontSize = 14.sp) },
                         leadingIcon = {
-                            Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_share),
+                                contentDescription = null,
+                                tint = Color(0xFF334155),
+                                modifier = Modifier.size(18.dp)
+                            )
                         },
                         onClick = {
                             isMenuExpanded = false
@@ -557,7 +601,12 @@ fun BrowserTopBar(
                     DropdownMenuItem(
                         text = { Text("Chromium Content Shell", fontSize = 14.sp) },
                         leadingIcon = {
-                            Icon(Icons.Default.Info, contentDescription = null, tint = Color(0xFF0284C7), modifier = Modifier.size(18.dp))
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_info),
+                                contentDescription = null,
+                                tint = Color(0xFF0284C7),
+                                modifier = Modifier.size(18.dp)
+                            )
                         },
                         onClick = {
                             isMenuExpanded = false
@@ -568,7 +617,12 @@ fun BrowserTopBar(
                     DropdownMenuItem(
                         text = { Text("Close Tab", fontSize = 14.sp, color = Color(0xFFDC2626)) },
                         leadingIcon = {
-                            Icon(Icons.Default.Close, contentDescription = null, tint = Color(0xFFDC2626), modifier = Modifier.size(18.dp))
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_close),
+                                contentDescription = null,
+                                tint = Color(0xFFDC2626),
+                                modifier = Modifier.size(18.dp)
+                            )
                         },
                         onClick = {
                             isMenuExpanded = false
